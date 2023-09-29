@@ -1,0 +1,73 @@
+-- AdventureWorks Questions and Answers
+
+-- Question 1 (Business User - Marginal Complexity)
+-- Original Author: John Doe
+-- What are the product names and their respective list prices?
+SELECT ProductName, ListPrice
+FROM Production.Product;
+
+-- Question 2 (Business User - Marginal Complexity)
+-- Original Author: Jane Smith
+-- How many employees are there in the Sales department?
+SELECT COUNT(*) AS SalesEmployees
+FROM HumanResources.Employee
+WHERE DepartmentID = (SELECT DepartmentID FROM HumanResources.Department WHERE Name = 'Sales');
+
+-- Question 3 (Business User - Moderate Complexity)
+-- Original Author: Alice Johnson
+-- Can you provide a list of customers who have made purchases in the last month, including their total spending?
+SELECT C.CustomerID, C.FirstName, C.LastName, SUM(S.TotalDue) AS TotalSpending
+FROM Sales.Customer AS C
+INNER JOIN Sales.SalesOrderHeader AS S ON C.CustomerID = S.CustomerID
+WHERE S.OrderDate >= DATEADD(MONTH, -1, GETDATE())
+GROUP BY C.CustomerID, C.FirstName, C.LastName;
+
+-- Question 4 (Business User - Moderate Complexity)
+-- Original Author: Bob Wilson
+-- What are the top 5 products by sales quantity?
+SELECT TOP 5 ProductID, Name, SUM(OrderQty) AS TotalSalesQuantity
+FROM Production.Product AS P
+INNER JOIN Sales.SalesOrderDetail AS D ON P.ProductID = D.ProductID
+GROUP BY ProductID, Name
+ORDER BY TotalSalesQuantity DESC;
+
+-- Question 5 (Business User - Increased Complexity)
+-- Original Author: Carol Davis
+-- Provide a monthly sales report for the year 2022, showing total sales and average sales per day.
+SELECT 
+    DATEPART(YEAR, OrderDate) AS Year,
+    DATEPART(MONTH, OrderDate) AS Month,
+    SUM(TotalDue) AS TotalSales,
+    AVG(TotalDue) AS AvgSalesPerDay
+FROM Sales.SalesOrderHeader
+WHERE DATEPART(YEAR, OrderDate) = 2022
+GROUP BY DATEPART(YEAR, OrderDate), DATEPART(MONTH, OrderDate)
+ORDER BY Year, Month;
+
+-- Question 6 (Business User - Increased Complexity)
+-- Original Author: David Brown
+-- Provide a list of employees who have been with the company for more than 10 years, including their department and job title.
+SELECT E.EmployeeID, E.FirstName, E.LastName, D.Name AS Department, J.Title AS JobTitle
+FROM HumanResources.Employee AS E
+INNER JOIN HumanResources.Department AS D ON E.DepartmentID = D.DepartmentID
+INNER JOIN HumanResources.EmployeeDepartmentHistory AS EDH ON E.EmployeeID = EDH.EmployeeID
+INNER JOIN HumanResources.JobTitle AS J ON E.JobTitle = J.JobTitle
+WHERE EDH.EndDate IS NULL
+    AND D.Name IS NOT NULL
+    AND D.GroupName IS NOT NULL
+    AND J.Title IS NOT NULL
+    AND DATEDIFF(YEAR, E.HireDate, GETDATE()) > 10;
+
+-- Question 7 (Metadata - System Information Schema)
+-- Original Author: Emily White
+-- Retrieve a list of tables in the AdventureWorks database.
+SELECT TABLE_NAME
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_CATALOG = 'AdventureWorks';
+
+-- Question 8 (Metadata - System Information Schema)
+-- Original Author: Frank Miller
+-- Find the columns of the "Person.Address" table along with their data types.
+SELECT COLUMN_NAME, DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'Address' AND TABLE_SCHEMA = 'Person';
